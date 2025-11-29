@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonaServiceimpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ventas_bolivar</a> &gt; <a href="index.source.html" class="el_package">com.example.ventasbolivar.service.serviceimpl</a> &gt; <span class="el_source">PersonaServiceimpl.java</span></div><h1>PersonaServiceimpl.java</h1><pre class="source lang-java linenums">package com.example.ventasbolivar.service.serviceimpl;
+
+import com.example.ventasbolivar.model.dto.PersonaRequest;
+import com.example.ventasbolivar.model.dto.PersonaResponse;
+import com.example.ventasbolivar.model.entity.Persona;
+import com.example.ventasbolivar.repository.PersonaRepository;
+import com.example.ventasbolivar.service.PersonaService;
+import java.util.List;
+import java.util.NoSuchElementException;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * PersonaServiceImpl.
+ */
+@Service
+@RequiredArgsConstructor
+public class PersonaServiceimpl implements PersonaService {
+
+<span class="fc" id="L22">  private static final Logger log = LoggerFactory.getLogger(PersonaServiceimpl.class);</span>
+
+  private final PersonaRepository repo;
+
+  @Override
+  public List&lt;PersonaResponse&gt; listar() {
+<span class="fc" id="L28">    log.info(&quot;Listando todas las personas&quot;);</span>
+
+<span class="fc" id="L30">    List&lt;PersonaResponse&gt; lista = repo.findAll()</span>
+<span class="fc" id="L31">        .stream()</span>
+<span class="fc" id="L32">        .map(this::toResponse)</span>
+<span class="fc" id="L33">        .toList();</span>
+
+<span class="fc" id="L35">    log.info(&quot;Total personas encontradas: {}&quot;, lista.size());</span>
+<span class="fc" id="L36">    return lista;</span>
+  }
+
+  @Override
+  public PersonaResponse obtener(Integer id) {
+<span class="fc" id="L41">    log.info(&quot;Obteniendo persona con ID {}&quot;, id);</span>
+
+<span class="fc" id="L43">    Persona p = repo.findById(id)</span>
+<span class="fc" id="L44">        .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L45">          log.warn(&quot;Persona con ID {} no encontrada&quot;, id);</span>
+<span class="fc" id="L46">          return new NoSuchElementException(&quot;Persona no encontrada&quot;);</span>
+        });
+
+<span class="fc" id="L49">    log.debug(&quot;Persona encontrada: {}&quot;, p.getNombre());</span>
+<span class="fc" id="L50">    return toResponse(p);</span>
+  }
+
+  @Override
+  public PersonaResponse crear(PersonaRequest req) {
+<span class="fc" id="L55">    log.info(&quot;Registrando nueva persona: {}&quot;, req.getNombre());</span>
+
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">    if (req.getNombre() == null || req.getNombre().isBlank()) {</span>
+<span class="fc" id="L58">      log.error(&quot;Error al crear persona: nombre inválido&quot;);</span>
+<span class="fc" id="L59">      throw new IllegalArgumentException(&quot;Nombre inválido&quot;);</span>
+    }
+
+<span class="fc" id="L62">    Persona p = new Persona();</span>
+<span class="fc" id="L63">    p.setTipoPersona(req.getTipoPersona());</span>
+<span class="fc" id="L64">    p.setNombre(req.getNombre());</span>
+<span class="fc" id="L65">    p.setTipoDocumento(req.getTipoDocumento());</span>
+<span class="fc" id="L66">    p.setNumDocumento(req.getNumDocumento());</span>
+<span class="fc" id="L67">    p.setDireccion(req.getDireccion());</span>
+<span class="fc" id="L68">    p.setTelefono(req.getTelefono());</span>
+<span class="fc" id="L69">    p.setEmail(req.getEmail());</span>
+
+<span class="fc" id="L71">    Persona guardado = repo.save(p);</span>
+
+<span class="fc" id="L73">    log.info(&quot;Persona creada exitosamente con ID {}&quot;, guardado.getId());</span>
+<span class="fc" id="L74">    return toResponse(guardado);</span>
+  }
+
+  @Override
+  public PersonaResponse actualizar(Integer id, PersonaRequest req) {
+<span class="fc" id="L79">    log.info(&quot;Actualizando persona con ID {}&quot;, id);</span>
+
+<span class="fc" id="L81">    Persona p = repo.findById(id)</span>
+<span class="fc" id="L82">        .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L83">          log.warn(&quot;Persona con ID {} no encontrada para actualización&quot;, id);</span>
+<span class="fc" id="L84">          return new NoSuchElementException(&quot;Persona no encontrada&quot;);</span>
+        });
+
+<span class="fc" id="L87">    p.setTipoPersona(req.getTipoPersona());</span>
+<span class="fc" id="L88">    p.setNombre(req.getNombre());</span>
+<span class="fc" id="L89">    p.setTipoDocumento(req.getTipoDocumento());</span>
+<span class="fc" id="L90">    p.setNumDocumento(req.getNumDocumento());</span>
+<span class="fc" id="L91">    p.setDireccion(req.getDireccion());</span>
+<span class="fc" id="L92">    p.setTelefono(req.getTelefono());</span>
+<span class="fc" id="L93">    p.setEmail(req.getEmail());</span>
+
+<span class="fc" id="L95">    repo.save(p);</span>
+
+<span class="fc" id="L97">    log.info(&quot;Persona con ID {} actualizada correctamente&quot;, id);</span>
+<span class="fc" id="L98">    return toResponse(p);</span>
+  }
+
+  @Override
+  public void eliminar(Integer id) {
+<span class="fc" id="L103">    log.info(&quot;Eliminando persona con ID {}&quot;, id);</span>
+
+<span class="fc" id="L105">    Persona p = repo.findById(id)</span>
+<span class="fc" id="L106">        .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L107">          log.warn(&quot;Persona con ID {} no encontrada para eliminación&quot;, id);</span>
+<span class="fc" id="L108">          return new NoSuchElementException(&quot;Persona no encontrada&quot;);</span>
+        });
+
+<span class="fc" id="L111">    repo.delete(p);</span>
+
+<span class="fc" id="L113">    log.info(&quot;Persona con ID {} eliminada correctamente&quot;, id);</span>
+<span class="fc" id="L114">  }</span>
+
+  @Override
+  public List&lt;PersonaResponse&gt; listarClientes() {
+<span class="fc" id="L118">    log.info(&quot;Listando clientes&quot;);</span>
+
+<span class="fc" id="L120">    List&lt;PersonaResponse&gt; lista = repo.findAll()</span>
+<span class="fc" id="L121">        .stream()</span>
+<span class="fc" id="L122">        .filter(p -&gt; &quot;Cliente&quot;.equalsIgnoreCase(p.getTipoPersona()))</span>
+<span class="fc" id="L123">        .map(this::toResponse)</span>
+<span class="fc" id="L124">        .toList();</span>
+
+<span class="fc" id="L126">    log.info(&quot;Total clientes encontrados: {}&quot;, lista.size());</span>
+<span class="fc" id="L127">    return lista;</span>
+  }
+
+  @Override
+  public List&lt;PersonaResponse&gt; listarProveedores() {
+<span class="fc" id="L132">    log.info(&quot;Listando proveedores&quot;);</span>
+
+<span class="fc" id="L134">    List&lt;PersonaResponse&gt; lista = repo.findAll()</span>
+<span class="fc" id="L135">        .stream()</span>
+<span class="fc" id="L136">        .filter(p -&gt; &quot;Proveedor&quot;.equalsIgnoreCase(p.getTipoPersona()))</span>
+<span class="fc" id="L137">        .map(this::toResponse)</span>
+<span class="fc" id="L138">        .toList();</span>
+
+<span class="fc" id="L140">    log.info(&quot;Total proveedores encontrados: {}&quot;, lista.size());</span>
+<span class="fc" id="L141">    return lista;</span>
+  }
+
+  private PersonaResponse toResponse(Persona p) {
+<span class="fc" id="L145">    return new PersonaResponse(</span>
+<span class="fc" id="L146">     p.getId(),</span>
+<span class="fc" id="L147">     p.getNombre(),</span>
+<span class="fc" id="L148">     p.getTipoPersona(),</span>
+<span class="fc" id="L149">     p.getNumDocumento(),</span>
+<span class="fc" id="L150">     p.getTelefono()</span>
+    );
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

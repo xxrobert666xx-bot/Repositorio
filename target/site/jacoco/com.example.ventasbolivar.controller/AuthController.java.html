@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ventas_bolivar</a> &gt; <a href="index.source.html" class="el_package">com.example.ventasbolivar.controller</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package com.example.ventasbolivar.controller;
+
+import com.example.ventasbolivar.model.dto.LoginRequest;
+import com.example.ventasbolivar.model.dto.LoginResponse;
+import com.example.ventasbolivar.model.entity.Usuario;
+import com.example.ventasbolivar.repository.UsuarioRepository;
+import com.example.ventasbolivar.service.security.CustomUserDetailsService;
+import com.example.ventasbolivar.service.security.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * AuthController.
+ */
+@RestController
+@RequestMapping(&quot;/api/auth&quot;)
+@Tag(name = &quot;Autenticación&quot;, description = &quot;Gestión de autenticación del sistema&quot;)
+public class AuthController {
+
+  private final AuthenticationManager authManager;
+  private final JwtService jwt;
+  private final CustomUserDetailsService userService;
+  private final UsuarioRepository usuarioRepo;
+
+  /**
+   * AuthController.
+   */
+  public AuthController(AuthenticationManager authManager,
+                        JwtService jwt,
+                        CustomUserDetailsService userService,
+<span class="fc" id="L46">                        UsuarioRepository usuarioRepo) {</span>
+<span class="fc" id="L47">    this.authManager = authManager;</span>
+<span class="fc" id="L48">    this.jwt = jwt;</span>
+<span class="fc" id="L49">    this.userService = userService;</span>
+<span class="fc" id="L50">    this.usuarioRepo = usuarioRepo;</span>
+<span class="fc" id="L51">  }</span>
+
+  /**
+   * Endpoint.
+   */
+  @Operation(
+      summary = &quot;Iniciar sesión&quot;,
+      description = &quot;Autentica al usuario con sus credenciales y &quot;
+       + &quot;genera un token JWT para acceder al sistema.&quot;
+  )
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Autenticación exitosa, token generado&quot;),
+    @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Credenciales inválidas&quot;),
+    @ApiResponse(responseCode = &quot;500&quot;, description = &quot;Error interno del servidor&quot;)
+  })
+  @PostMapping(&quot;/login&quot;)
+  public ResponseEntity&lt;?&gt; login(
+      @Parameter(description = &quot;Credenciales de acceso del usuario&quot;)
+      @RequestBody LoginRequest req) {
+    try {
+<span class="fc" id="L71">      authManager.authenticate(</span>
+        new UsernamePasswordAuthenticationToken(
+<span class="fc" id="L73">          req.login(), req.clave()</span>
+       )
+      );
+<span class="fc" id="L76">    } catch (Exception e) {</span>
+<span class="fc" id="L77">      return ResponseEntity.status(401).body(&quot;Credenciales inválidas&quot;);</span>
+<span class="fc" id="L78">    }</span>
+
+<span class="fc" id="L80">    UserDetails user = userService.loadUserByUsername(req.login());</span>
+<span class="fc" id="L81">    Map&lt;String, Object&gt; claims = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L82">    claims.put(&quot;permisos&quot;,</span>
+<span class="pc" id="L83">        user.getAuthorities().stream().map(a -&gt; a.getAuthority()).toList()</span>
+    );
+
+<span class="fc" id="L86">    String token = jwt.generateToken(user, claims);</span>
+
+<span class="fc" id="L88">    return ResponseEntity.ok(new LoginResponse(token, &quot;Bearer&quot;));</span>
+  }
+
+  /**
+   * Endpoint.
+   */
+  @Operation(
+      summary = &quot;Obtener datos del usuario autenticado&quot;,
+      description = &quot;Devuelve la información del usuario actualmente &quot;
+       + &quot;autenticado según el token proporcionado.&quot;
+  )
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Usuario autenticado encontrado&quot;),
+    @ApiResponse(responseCode = &quot;401&quot;, description = &quot;No se proporcionó token o no es válido&quot;),
+    @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Usuario no encontrado&quot;)
+  })
+  @GetMapping(&quot;/me&quot;)
+  public ResponseEntity&lt;?&gt; me(
+      @Parameter(description = &quot;Información de autenticación obtenida del token JWT&quot;)
+      org.springframework.security.core.Authentication auth
+  ) {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">    if (auth == null) {</span>
+<span class="fc" id="L110">      return ResponseEntity.status(401).build();</span>
+    }
+
+<span class="fc" id="L113">    String login = auth.getName();</span>
+<span class="fc" id="L114">    Optional&lt;Usuario&gt; u = usuarioRepo.findByLogin(login);</span>
+
+<span class="fc" id="L116">    return u.map(ResponseEntity::ok)</span>
+<span class="fc" id="L117">     .orElseGet(() -&gt; ResponseEntity.notFound().build());</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ventas_bolivar</a> &gt; <a href="index.source.html" class="el_package">com.example.ventasbolivar.controller</a> &gt; <span class="el_source">PersonaController.java</span></div><h1>PersonaController.java</h1><pre class="source lang-java linenums">package com.example.ventasbolivar.controller;
+
+import com.example.ventasbolivar.model.dto.PersonaRequest;
+import com.example.ventasbolivar.model.dto.PersonaResponse;
+import com.example.ventasbolivar.service.PersonaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.NoSuchElementException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * PersonaController.
+ */
+@RestController
+@RequestMapping(&quot;/api/personas&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;Personas&quot;, description = &quot;Gestión de personas (clientes y proveedores) del sistema&quot;)
+public class PersonaController {
+
+  private final PersonaService service;
+
+  /**
+   * Endpoint.
+   */
+  @Operation(
+      summary = &quot;Listar todas las personas&quot;,
+      description = &quot;Devuelve un listado completo de las personas registrados.&quot;
+  )
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Lista obtenida correctamente&quot;),
+    @ApiResponse(responseCode = &quot;500&quot;, description = &quot;Error interno del servidor&quot;)
+  })
+  @GetMapping
+  public ResponseEntity&lt;List&lt;PersonaResponse&gt;&gt; listar() {
+<span class="fc" id="L49">    return ResponseEntity.ok(service.listar());</span>
+  }
+
+  /**
+   * Endpoint.
+   */
+  @Operation(summary = &quot;Obtener una persona por ID&quot;)
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Persona encontrada&quot;),
+    @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Persona no encontrada&quot;)
+  })
+  @GetMapping(&quot;/{id}&quot;)
+  public ResponseEntity&lt;PersonaResponse&gt; obtener(
+      @Parameter(description = &quot;ID de la persona&quot;, example = &quot;1&quot;)
+      @PathVariable Integer id
+  ) {
+    try {
+<span class="fc" id="L66">      return ResponseEntity.ok(service.obtener(id));</span>
+<span class="nc" id="L67">    } catch (NoSuchElementException e) {</span>
+<span class="nc" id="L68">      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+    }
+  }
+
+  /**
+   * Endpoint.
+   */
+  @Operation(summary = &quot;Crear una nueva persona&quot;)
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Persona creada exitosamente&quot;),
+    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Datos inválidos&quot;)
+  })
+  @PostMapping
+  public ResponseEntity&lt;PersonaResponse&gt; crear(
+      @Parameter(description = &quot;Datos de la persona a registrar&quot;)
+      @RequestBody PersonaRequest req
+  ) {
+    try {
+<span class="fc" id="L86">      return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(req));</span>
+<span class="nc" id="L87">    } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L88">      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+    }
+  }
+
+  /**
+   * Endpoint.
+   */
+  @Operation(summary = &quot;Actualizar una persona por ID&quot;)
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Persona actualizada correctamente&quot;),
+    @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Persona no encontrada&quot;)
+  })
+  @PutMapping(&quot;/{id}&quot;)
+  public ResponseEntity&lt;PersonaResponse&gt; actualizar(
+      @Parameter(description = &quot;ID de la persona&quot;, example = &quot;1&quot;)
+      @PathVariable Integer id,
+      @RequestBody PersonaRequest req
+  ) {
+    try {
+<span class="fc" id="L107">      return ResponseEntity.ok(service.actualizar(id, req));</span>
+<span class="nc" id="L108">    } catch (NoSuchElementException e) {</span>
+<span class="nc" id="L109">      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+    }
+  }
+
+  /**
+   * Endpoint.
+   */
+  @Operation(summary = &quot;Eliminar una persona por ID&quot;)
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;204&quot;, description = &quot;Persona eliminada correctamente&quot;),
+    @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Persona no encontrada&quot;)
+  })
+  @DeleteMapping(&quot;/{id}&quot;)
+  public ResponseEntity&lt;Void&gt; eliminar(
+      @Parameter(description = &quot;ID de la persona&quot;, example = &quot;1&quot;)
+      @PathVariable Integer id
+  ) {
+    try {
+<span class="fc" id="L127">      service.eliminar(id);</span>
+<span class="fc" id="L128">      return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L129">    } catch (NoSuchElementException e) {</span>
+<span class="nc" id="L130">      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+    }
+  }
+
+  /**
+   * Endpoint.
+   */
+  @Operation(summary = &quot;Listar solo clientes&quot;)
+  @ApiResponses({
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Lista obtenida correctamente&quot;)
+  })
+  @GetMapping(&quot;/clientes&quot;)
+  public ResponseEntity&lt;List&lt;PersonaResponse&gt;&gt; listarClientes() {
+<span class="fc" id="L143">    return ResponseEntity.ok(service.listarClientes());</span>
+  }
+
+  /**
+   * Endpoint.
+   */
+  @Operation(summary = &quot;Listar solo proveedores&quot;)
+  @ApiResponses({
+      @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Lista obtenida correctamente&quot;)
+  })
+  @GetMapping(&quot;/proveedores&quot;)
+  public ResponseEntity&lt;List&lt;PersonaResponse&gt;&gt; listarProveedores() {
+<span class="fc" id="L155">    return ResponseEntity.ok(service.listarProveedores());</span>
+  }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

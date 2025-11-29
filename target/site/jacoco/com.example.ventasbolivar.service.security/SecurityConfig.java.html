@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ventas_bolivar</a> &gt; <a href="index.source.html" class="el_package">com.example.ventasbolivar.service.security</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.example.ventasbolivar.service.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+/**
+ Configuration.
+ */
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+  private final CustomUserDetailsService userService;
+  private final JwtAuthFilter jwtFilter;
+
+  /**
+   * SecurityConfig.
+   */
+  public SecurityConfig(CustomUserDetailsService userService,
+<span class="fc" id="L31">                        JwtAuthFilter jwtFilter) {</span>
+<span class="fc" id="L32">    this.userService = userService;</span>
+<span class="fc" id="L33">    this.jwtFilter = jwtFilter;</span>
+<span class="fc" id="L34">  }</span>
+
+  /**
+   * Bean.
+   */
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+    // Security justification: This API is completely stateless and uses JWT authentication.
+    // No sessions or cookies are used, so CSRF protection does
+    // not apply and it is safe to disable it.
+<span class="fc" id="L45">    http.csrf(csrf -&gt; csrf.disable());</span>
+
+<span class="fc" id="L47">    http.authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L48">        .requestMatchers(</span>
+         &quot;/v3/api-docs/**&quot;,
+         &quot;/swagger-ui/**&quot;,
+         &quot;/swagger-ui.html&quot;
+<span class="fc" id="L52">     ).permitAll()</span>
+<span class="fc" id="L53">        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
+<span class="fc" id="L54">        .anyRequest().authenticated()</span>
+    );
+
+<span class="fc" id="L57">    http.sessionManagement(sm -&gt;</span>
+<span class="fc" id="L58">        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+    );
+
+<span class="fc" id="L61">    http.authenticationProvider(authenticationProvider());</span>
+<span class="fc" id="L62">    http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);</span>
+
+<span class="fc" id="L64">    return http.build();</span>
+  }
+
+  /**
+   * Bean.
+   */
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+<span class="fc" id="L72">    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();</span>
+<span class="fc" id="L73">    provider.setUserDetailsService(userService);</span>
+<span class="fc" id="L74">    provider.setPasswordEncoder(passwordEncoder());</span>
+<span class="fc" id="L75">    return provider;</span>
+  }
+
+  /**
+   * Bean.
+   */
+  @Bean
+  public AuthenticationManager authManager(AuthenticationConfiguration c) throws Exception {
+<span class="fc" id="L83">    return c.getAuthenticationManager();</span>
+  }
+
+  /**
+   * Bean.
+   */
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L91">    return new BCryptPasswordEncoder(); // RECOMENDADO</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

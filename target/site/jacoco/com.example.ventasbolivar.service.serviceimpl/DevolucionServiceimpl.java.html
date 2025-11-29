@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DevolucionServiceimpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ventas_bolivar</a> &gt; <a href="index.source.html" class="el_package">com.example.ventasbolivar.service.serviceimpl</a> &gt; <span class="el_source">DevolucionServiceimpl.java</span></div><h1>DevolucionServiceimpl.java</h1><pre class="source lang-java linenums">package com.example.ventasbolivar.service.serviceimpl;
+
+import com.example.ventasbolivar.model.dto.DevolucionRequest;
+import com.example.ventasbolivar.model.dto.DevolucionResponse;
+import com.example.ventasbolivar.model.entity.Articulo;
+import com.example.ventasbolivar.model.entity.Devolucion;
+import com.example.ventasbolivar.repository.ArticuloRepository;
+import com.example.ventasbolivar.repository.DevolucionRepository;
+import com.example.ventasbolivar.service.DevolucionService;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * DevolucionServiceImpl.
+ */
+@Service
+public class DevolucionServiceimpl implements DevolucionService {
+
+  private final DevolucionRepository devolucionRepository;
+  private final ArticuloRepository articuloRepository;
+
+  /**
+   * DevolucionServiceimpl.
+   */
+  public DevolucionServiceimpl(DevolucionRepository devolucionRepository,
+<span class="fc" id="L30">                               ArticuloRepository articuloRepository) {</span>
+<span class="fc" id="L31">    this.devolucionRepository = devolucionRepository;</span>
+<span class="fc" id="L32">    this.articuloRepository = articuloRepository;</span>
+<span class="fc" id="L33">  }</span>
+
+  @Override
+  public DevolucionResponse registrarDevolucion(DevolucionRequest request) {
+
+<span class="fc" id="L38">    Devolucion dev = new Devolucion();</span>
+<span class="fc" id="L39">    dev.setIdventa(request.getIdventa());</span>
+<span class="fc" id="L40">    dev.setIdarticulo(request.getIdarticulo());</span>
+<span class="fc" id="L41">    dev.setCantidad(request.getCantidad());</span>
+<span class="fc" id="L42">    dev.setMotivo(request.getMotivo());</span>
+<span class="fc" id="L43">    dev.setFechaDevolucion(LocalDateTime.now());</span>
+
+<span class="fc" id="L45">    dev = devolucionRepository.save(dev);</span>
+
+<span class="fc" id="L47">    Articulo articulo = articuloRepository.findById(request.getIdarticulo())</span>
+<span class="fc" id="L48">        .orElseThrow(() -&gt; new RuntimeException(&quot;Artículo no encontrado&quot;));</span>
+
+<span class="fc" id="L50">    articulo.setStock(articulo.getStock() + request.getCantidad());</span>
+<span class="fc" id="L51">    articuloRepository.save(articulo);</span>
+
+<span class="fc" id="L53">    return entityToResponse(dev);</span>
+  }
+
+  @Override
+  public List&lt;DevolucionResponse&gt; listarDevoluciones() {
+<span class="fc" id="L58">    return devolucionRepository.findAll()</span>
+<span class="fc" id="L59">     .stream()</span>
+<span class="fc" id="L60">     .map(this::entityToResponse)</span>
+<span class="fc" id="L61">     .collect(Collectors.toList());</span>
+  }
+
+  @Override
+  public DevolucionResponse obtenerPorId(Integer id) {
+<span class="fc" id="L66">    Devolucion dev = devolucionRepository.findById(id)</span>
+<span class="fc" id="L67">        .orElseThrow(() -&gt; new RuntimeException(&quot;Devolución no encontrada&quot;));</span>
+<span class="fc" id="L68">    return entityToResponse(dev);</span>
+  }
+
+  private DevolucionResponse entityToResponse(Devolucion dev) {
+<span class="fc" id="L72">    DevolucionResponse res = new DevolucionResponse();</span>
+<span class="fc" id="L73">    res.setIddevolucion(dev.getIddevolucion());</span>
+<span class="fc" id="L74">    res.setIdventa(dev.getIdventa());</span>
+<span class="fc" id="L75">    res.setIdarticulo(dev.getIdarticulo());</span>
+<span class="fc" id="L76">    res.setCantidad(dev.getCantidad());</span>
+<span class="fc" id="L77">    res.setMotivo(dev.getMotivo());</span>
+<span class="fc" id="L78">    res.setFechaDevolucion(dev.getFechaDevolucion());</span>
+<span class="fc" id="L79">    return res;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

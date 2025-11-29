@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomUserDetailsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ventas_bolivar</a> &gt; <a href="index.source.html" class="el_package">com.example.ventasbolivar.service.security</a> &gt; <span class="el_source">CustomUserDetailsService.java</span></div><h1>CustomUserDetailsService.java</h1><pre class="source lang-java linenums">package com.example.ventasbolivar.service.security;
+
+import com.example.ventasbolivar.model.entity.Permiso;
+import com.example.ventasbolivar.model.entity.Usuario;
+import com.example.ventasbolivar.repository.UsuarioPermisoRepository;
+import com.example.ventasbolivar.repository.UsuarioRepository;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+/**
+ * CustomUserDetailsService.
+ */
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+  private final UsuarioRepository usuarioRepository;
+  private final UsuarioPermisoRepository usuarioPermisoRepository;
+
+  /**
+   * CustomUserDetailsService.
+   */
+  public CustomUserDetailsService(
+      UsuarioRepository usuarioRepository,
+      UsuarioPermisoRepository usuarioPermisoRepository
+<span class="fc" id="L30">  ) {</span>
+<span class="fc" id="L31">    this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L32">    this.usuarioPermisoRepository = usuarioPermisoRepository;</span>
+<span class="fc" id="L33">  }</span>
+
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+<span class="fc" id="L38">    Usuario usuario = usuarioRepository.findByLogin(username)</span>
+<span class="fc" id="L39">        .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Usuario no encontrado&quot;));</span>
+
+<span class="fc" id="L41">    List&lt;Permiso&gt; permisos =</span>
+<span class="fc" id="L42">        usuarioPermisoRepository.findPermisosByUsuarioId(usuario.getId());</span>
+
+<span class="fc" id="L44">    List&lt;SimpleGrantedAuthority&gt; authorities = permisos.stream()</span>
+<span class="fc" id="L45">        .map(p -&gt; new SimpleGrantedAuthority(p.getNombre()))</span>
+<span class="fc" id="L46">        .collect(Collectors.toList());</span>
+
+<span class="pc bpc" id="L48" title="1 of 4 branches missed.">    boolean enabled = usuario.getCondicion() != null &amp;&amp; usuario.getCondicion() == 1;</span>
+
+<span class="fc" id="L50">    return org.springframework.security.core.userdetails.User</span>
+<span class="fc" id="L51">     .withUsername(usuario.getLogin())</span>
+<span class="fc" id="L52">     .password(usuario.getClave())</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">     .authorities(authorities)</span>
+<span class="fc" id="L54">     .disabled(!enabled)</span>
+<span class="fc" id="L55">     .build();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
