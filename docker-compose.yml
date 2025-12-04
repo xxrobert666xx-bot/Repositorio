@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mysql-server: 
+    image: mysql:8.0
+    container_name: mysql-database
+    restart: always 
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+      MYSQL_DATABASE: sistemabolivar
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - C:\Users\COREI5\Downloads\sistemabolivar.sql:/docker-entrypoint-initdb.d/sistemabolivar.sql
+    ports:
+      - "3306:3306"
+
+volumes:
+  mysql_data:
