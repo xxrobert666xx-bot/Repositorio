@@ -8,6 +8,11 @@ pipeline {
         jdk 'JDK_17'
     }
 
+    environment {
+       // Usa el ID de la credencial que creaste en Jenkins
+       SCANNER_TOKEN = credentials('SonarQube_Auth_Token')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -24,7 +29,27 @@ pipeline {
                 sh 'mvn clean package'
             }
         }
+        
+        stage('SonarQube Analysis') {
+            steps {
+               // 'Mi_Servidor_Sonar' debe coincidir con el nombre de tu servidor en la configuración de Jenkins
+               withSonarQubeEnv('Sonarqube_jenkins') {
+                  sh "mvn sonar:sonar -Dsonar.projectKey=my-java-app -Dsonar.host.url=... -Dsonar.login=${SCANNER_TOKEN}"
+               }
+            }
+        }
+                   
+        stage('Quality Gate Check') {
+           steps {
+                 timeout(time: 5, unit: 'MINUTES') {
+               // Detiene la pipeline si no pasa el Quality Gate
+                 waitForQualityGate abortPipeline: true 
+             }
+           }
+        }
     }
+  }
+    
 
     post {
         // Notificaciones o limpieza después de cada ejecución
@@ -39,4 +64,5 @@ pipeline {
             echo '¡ERROR! La etapa de despliegue falló.'
         }
     }
+
 }
