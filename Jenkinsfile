@@ -8,6 +8,8 @@ pipeline {
 
     environment {
         SCANNER_TOKEN = credentials('tokenn')
+        APP_NAME = 'ventas-bolivar'
+        APP_PORT = '8000' 
     }
 
     stages {
@@ -39,6 +41,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Build & Run Docker Container') {
+            steps {
+                script {
+                    def imageTag = "${env.APP_NAME}:${env.BUILD_NUMBER}"
+                    def containerName = "${env.APP_NAME}-container"
+                    echo "Building image: ${imageTag}"
+                    sh "docker build -t ${imageTag} ."
+                    echo "Checking for old container: ${containerName}"
+                    sh "docker rm -f ${containerName} || true"
+                    sh "docker run -d -p 8090:${env.APP_PORT} --name ${containerName} ${imageTag}"
+                    echo "Application deployed and running on http://localhost:8090"
+                }
+            }
+        }
     } 
 
     post {
@@ -54,6 +71,7 @@ pipeline {
     }
 
 }
+
 
 
 
