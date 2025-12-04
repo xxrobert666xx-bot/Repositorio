@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        SCANNER_TOKEN = credentials('token_sonar')
+        SCANNER_TOKEN = credentials('tokenn')
     }
 
     stages {
@@ -54,5 +54,6 @@ pipeline {
     }
 
 }
+
 
 
