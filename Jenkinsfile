@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        SCANNER_TOKEN = credentials('tokenn')
+        SCANNER_TOKEN = credentials('prueba')
         DOCKER_IMAGE_NAME = 'ventas_bolivarr' 
         APP_PORT = '8000'
         CONTAINER_NAME = 'ventas_bolivarr'
@@ -71,6 +71,7 @@ pipeline {
     }
 
 }
+
 
 
 
