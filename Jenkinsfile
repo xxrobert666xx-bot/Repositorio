@@ -8,6 +8,9 @@ pipeline {
 
     environment {
         SCANNER_TOKEN = credentials('tokenn')
+        DOCKER_IMAGE_NAME = 'ventas_bolivarr' 
+        APP_PORT = '8000'
+        CONTAINER_NAME = 'ventas_bolivarr'
     }
 
     stages {
@@ -39,6 +42,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker Build and Deploy Local') {
+            steps {
+                echo 'Construyendo imagen Docker localmente...'
+                sh "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ."
+                sh "docker tag ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_IMAGE_NAME}:latest"
+                echo "Desplegando contenedor Docker ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}..."
+                sh "docker stop ${CONTAINER_NAME} || true" 
+                sh "docker rm ${CONTAINER_NAME} || true" 
+                sh "docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:${APP_PORT} ${DOCKER_IMAGE_NAME}:latest"
+                echo "Contenedor ${DOCKER_IMAGE_NAME}:latest desplegado en el puerto ${APP_PORT}."
+            }
+        }
+   
     } 
 
     post {
@@ -54,6 +71,7 @@ pipeline {
     }
 
 }
+
 
 
 
