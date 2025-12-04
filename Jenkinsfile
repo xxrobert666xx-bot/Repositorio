@@ -27,7 +27,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                withSonarQubeEnv('Sonarqube_jenkins') {
-                    sh "mvn sonar:sonar -Dsonar.projectKey=my-java-app -Dsonar.login=${SCANNER_TOKEN}"
+                    sh "mvn sonar:sonar -Dsonar.projectKey=my-java-app -Dsonar.login=$SCANNER_TOKEN"
                }
             }
         }
@@ -54,4 +54,5 @@ pipeline {
     }
 
 }
+
 
