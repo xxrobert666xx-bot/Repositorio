@@ -43,6 +43,12 @@ pipeline {
         }
 
         stage('Build & Run Docker Container') {
+            agent {
+                docker {
+                    image 'docker:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' 
+                }
+            }
             steps {
                 script {
                     def imageTag = "${env.APP_NAME}:${env.BUILD_NUMBER}"
@@ -71,6 +77,7 @@ pipeline {
     }
 
 }
+
 
 
 
